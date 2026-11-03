@@ -166,11 +166,19 @@ export function addCodeFields(
   // A contagem do "Reenviar código (29s)" redesenha a cada segundo até zerar.
   if (seconds > 0) setTimeout(() => m.redraw(), 1000);
 
-  items.add('magicLinkHeading', <h3 className="MagicLink-heading">{app.translator.trans('ramon-magic-link.forum.code.heading')}</h3>, 50);
+  // dir="auto": num fórum RTL sem tradução da extensão, o texto em inglês fica
+  // com a pontuação no lugar.
+  items.add(
+    'magicLinkHeading',
+    <h3 className="MagicLink-heading" dir="auto">
+      {app.translator.trans('ramon-magic-link.forum.code.heading')}
+    </h3>,
+    50
+  );
 
   items.add(
     'magicLinkHint',
-    <p className="helpText MagicLink-hint">
+    <p className="helpText MagicLink-hint" dir="auto">
       {/* Com o nome de usuário, o e-mail da conta não aparece: só quem o tem sabe qual é. */}
       {state.email.includes('@')
         ? app.translator.trans('ramon-magic-link.forum.code.sent_text', { length: codeLength(), email: <strong>{state.email}</strong> })
