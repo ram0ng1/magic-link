@@ -1,52 +1,114 @@
-// Só o que o passo do código precisa; o resto vem das classes de formulário
-// do core, que o tema (Avocado, Canela) já estiliza.
+// Só o que o passo do código precisa. Cores, raios e fontes vêm das variáveis
+// do tema (core, Avocado, Canela), no claro e no escuro.
+
+.MagicLink-heading {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--heading-color, var(--text-color));
+}
 
 .MagicLink-hint {
-  margin-bottom: 15px;
-  text-align: center;
+  margin-bottom: 18px;
 
   // Só quebra o e-mail quando ele não cabe sozinho na linha.
   strong {
     overflow-wrap: break-word;
+    color: var(--text-color);
   }
 }
 
-.MagicLink-codeGroup .label {
-  text-align: left;
+// Uma caixa por dígito; o input de verdade fica transparente por cima. As
+// caixas dividem a largura toda do formulário, alinhadas aos outros campos.
+.MagicLink-otp {
+  position: relative;
+  display: flex;
+  width: 100%;
 }
 
-// input. na frente: vence o alinhamento à esquerda dos campos do Canela.
-input.MagicLink-code.FormControl {
-  font-family: var(--font-family-monospace, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: 0.5em;
-  text-align: center;
-  // Compensa o espaço depois do último dígito para o código ficar centrado.
-  text-indent: 0.5em;
+.MagicLink-otpBoxes {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+}
+
+.MagicLink-otpBox {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  border: 1px solid var(--control-bg);
+  border-radius: var(--border-radius);
+  background: var(--body-bg);
+  color: var(--muted-more-color, var(--muted-color));
+  font-size: 15px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &.is-filled {
+    color: var(--text-color);
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  &.is-active {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-color);
+  }
+}
+
+.MagicLink-otp.disabled .MagicLink-otpBox {
+  opacity: 0.6;
+}
+
+// Vence o `.Form--centered .FormControl` do core e os campos do Canela.
+.Form .MagicLink-otpInput {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  // 16px evita o zoom do iOS ao focar.
+  font-size: 16px;
+  cursor: text;
 }
 
 // Vence o `.Form--centered .Button` do core (botão de 50px, largura total).
-.Form--centered .MagicLink-actions {
+.Form .MagicLink-actions,
+.Form .MagicLink-useCode {
   display: flex;
-  // O .Form-group do core é coluna.
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px 16px;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: 0;
 
   .Button {
     width: auto;
     height: auto;
     margin: 0;
-    padding: 4px 6px;
+    padding: 6px 4px;
     font-size: 14px;
   }
 }
 
-// O texto do core ("enviaremos um link para redefinir") não vale sem senha.
-.ForgotPasswordModal.MagicLink--passwordless .Form-header {
-  display: none;
+.Form .MagicLink-useCode {
+  margin-top: -6px;
+}
+
+// O Canela alinha o formulário à esquerda.
+.CanelaAuthForm {
+  .MagicLink-codeGroup {
+    text-align: left;
+  }
+
+  .MagicLink-actions,
+  .MagicLink-useCode {
+    align-items: flex-start;
+  }
 }
 
 // Fora da tela em vez de display: none, que alguns robôs pulam.
@@ -58,11 +120,13 @@ input.MagicLink-code.FormControl {
   overflow: hidden;
 }
 
-.LogInModal-magicLinkToggle {
-  margin-bottom: 8px;
+// O texto do core ("enviaremos um link para redefinir") não vale sem senha.
+.ForgotPasswordModal.MagicLink--passwordless .Form-header {
+  display: none;
 }
 
 // Entrar por código: o link "Esqueci minha senha" do rodapé do core não vale.
-.LogInModal.MagicLink--code .LogInModal-forgotPassword {
+.LogInModal.MagicLink--code .LogInModal-forgotPassword,
+.LogInModal:has(.MagicLink-codeGroup) .LogInModal-forgotPassword {
   display: none;
 }

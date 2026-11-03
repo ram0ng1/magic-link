@@ -1,7 +1,7 @@
 ramon-magic-link:
   admin:
     settings:
-      allow_password_label: Also allow passwords
+      allow_password_label: Allow log in with password
       allow_password_help: "Off (recommended): members sign in and sign up only with the code or link sent by email; passwords are not accepted, stored or reset. On: members who already have a password can keep logging in with it (and reset it); sign up and email changes still use the email code."
       token_lifetime_label: Code and link lifetime (minutes)
       token_lifetime_help: "Between 5 and 1440 (24 hours). After its first use a link keeps working for 10 more minutes, so email scanners that open it first don't use it up. If email delivery breaks, run php flarum magic-link:login-url followed by the username on the server to get a sign in link."
@@ -9,21 +9,21 @@ ramon-magic-link:
   forum:
     log_in:
       submit_button: Send me a sign in code
-      use_password_link: Log in with a password instead
-      use_code_link: Log in with an email code instead
+      use_code_link: Email me a one-time login code
 
     sign_up:
       submit_button: Continue with email
 
     code:
-      sent_signin: If there is an account for {email}, we sent a sign in code and link to it.
-      sent_signup: We sent a code to {email}. Enter it to confirm your address and create your account.
-      sent_reauth: We sent a code to {email}. Enter it to confirm it's you.
+      heading: Check your email
+      sent_text: We sent a {length}-digit code to {email}. Enter it below to continue.
+      sent_text_username: We sent a {length}-digit code to the email of the account {username}. Enter it below to continue.
       label: Code from the email
-      submit_button: Verify code
-      resend_button: Send a new code
+      submit_button: Continue
+      resend_button: Resend code
+      resend_countdown: Resend code ({seconds}s)
       resent_message: A new code is on its way.
-      change_email_link: Use a different email
+      change_email_link: Use a different email address
       invalid_message: This code is invalid or has expired. Check the latest email or request a new code.
 
     change_email:

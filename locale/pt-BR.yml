@@ -1,7 +1,7 @@
 ramon-magic-link:
   admin:
     settings:
-      allow_password_label: Permitir senha também
+      allow_password_label: Permitir login com senha
       allow_password_help: "Desligado (recomendado): os membros entram e se cadastram só com o código ou o link enviado por e-mail; o fórum não aceita, não guarda e não redefine senhas. Ligado: quem já tem senha continua podendo entrar com ela (e redefini-la); o cadastro e a troca de e-mail seguem com o código por e-mail."
       token_lifetime_label: Validade do código e do link (minutos)
       token_lifetime_help: "Entre 5 e 1440 (24 horas). Depois do primeiro uso, o link ainda vale por 10 minutos, para que leitores de e-mail que o abrem antes não o gastem. Se o envio de e-mail quebrar, rode no servidor php flarum magic-link:login-url seguido do nome de usuário para ter um link de entrada."
@@ -9,21 +9,21 @@ ramon-magic-link:
   forum:
     log_in:
       submit_button: Enviar código de acesso
-      use_password_link: Entrar com senha
-      use_code_link: Entrar com código por e-mail
+      use_code_link: Receber um código de acesso por e-mail
 
     sign_up:
       submit_button: Continuar com e-mail
 
     code:
-      sent_signin: Se existir uma conta para {email}, enviamos para ela um código e um link de acesso.
-      sent_signup: Enviamos um código para {email}. Digite-o para confirmar o endereço e criar sua conta.
-      sent_reauth: Enviamos um código para {email}. Digite-o para confirmar que é você.
+      heading: Verifique seu e-mail
+      sent_text: Enviamos um código de {length} dígitos para {email}. Digite-o abaixo para continuar.
+      sent_text_username: Enviamos um código de {length} dígitos para o e-mail da conta {username}. Digite-o abaixo para continuar.
       label: Código do e-mail
-      submit_button: Verificar código
-      resend_button: Enviar um novo código
+      submit_button: Continuar
+      resend_button: Reenviar código
+      resend_countdown: Reenviar código ({seconds}s)
       resent_message: Um novo código está a caminho.
-      change_email_link: Usar outro e-mail
+      change_email_link: Usar um endereço de e-mail diferente
       invalid_message: Este código é inválido ou expirou. Confira o e-mail mais recente ou peça um novo código.
 
     change_email:

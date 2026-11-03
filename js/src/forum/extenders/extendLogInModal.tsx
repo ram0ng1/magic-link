@@ -7,30 +7,45 @@ import type ItemList from 'flarum/common/utils/ItemList';
 import { addCodeFields, createState, honeypotField, passwordless, requestCode, resentAlert, submitButton, verifyCode } from '../utils/magicLink';
 
 /**
- * O login vira "e-mail → código". O modal continua sendo o LogInModal do core
- * (o Avocado envolve o content() dele e o Canela o desenha na página /login),
- * só os campos, o envio e o rodapé mudam.
+ * O login por e-mail dentro do LogInModal do core (o Avocado envolve o
+ * content() dele e o Canela o desenha na página /login): só os campos e o
+ * envio mudam.
+ *
+ * - Sem senha: e-mail ou nome de usuário → código.
+ * - Com a senha permitida no admin: o formulário de senha de sempre, com um
+ *   link embaixo do e-mail que manda o código.
  *
  * LogInModal é carregado sob demanda no 2.x, então é estendido pelo caminho do módulo.
  */
 export default function extendLogInModal() {
   extend('flarum/forum/components/LogInModal', 'oninit', function (this: any) {
     this.magicLink = createState();
-    this.magicLinkUsePassword = false;
+
+    this.magicLinkSend = (resend: boolean) => {
+      const state = this.magicLink;
+      const identification = resend ? state.email : this.identification().trim();
+
+      this.loading = true;
+      this.alertAttrs = null;
+
+      requestCode(state, { type: 'signin', identification, remember: this.remember() }, this.onerror.bind(this)).then(() => {
+        state.email = identification;
+        this.loading = false;
+
+        if (resend) this.alertAttrs = resentAlert();
+
+        m.redraw.sync();
+        this.$('[name=code]').trigger('focus');
+      }, this.loaded.bind(this));
+    };
   });
 
   extend('flarum/forum/components/LogInModal', 'fields', function (this: any, items: ItemList<Mithril.Children>) {
-    if (this.magicLinkUsePassword) return;
-
     const state = this.magicLink;
 
-    items.remove('password');
-    // O "Esqueci minha senha" que o Canela põe no formulário.
-    items.remove('canelaForgot');
-
     if (state.ref) {
-      items.remove('identification');
-      items.remove('remember');
+      // O "Esqueci minha senha" que o Canela põe no formulário.
+      ['identification', 'password', 'remember', 'canelaForgot'].forEach((key) => items.remove(key));
 
       addCodeFields(items, state, {
         type: 'signin',
@@ -43,10 +58,26 @@ export default function extendLogInModal() {
       });
     } else {
       items.add('magicLinkHoneypot', honeypotField(state), -100);
+
+      if (passwordless()) {
+        items.remove('password');
+        items.remove('canelaForgot');
+      } else if (items.has('identification')) {
+        // Entre o e-mail e a senha (prioridades 30 e 20 no core).
+        items.add(
+          'magicLinkUseCode',
+          <div className="Form-group MagicLink-useCode">
+            <Button className="Button Button--text Button--link" type="button" onclick={() => this.magicLinkSend(false)} disabled={this.loading}>
+              {app.translator.trans('ramon-magic-link.forum.log_in.use_code_link')}
+            </Button>
+          </div>,
+          25
+        );
+      }
     }
 
     // Outra extensão (o modo só OAuth da fof/oauth, por exemplo) pode ter tirado o botão.
-    if (items.has('submit')) {
+    if (items.has('submit') && (state.ref || passwordless())) {
       items.setContent(
         'submit',
         submitButton(state.ref ? 'ramon-magic-link.forum.code.submit_button' : 'ramon-magic-link.forum.log_in.submit_button', this.loading)
@@ -54,33 +85,15 @@ export default function extendLogInModal() {
     }
   });
 
-  // O rodapé continua o do core ou o do tema; sem senha, o "Esqueci minha
-  // senha" dele some pelo CSS (classe abaixo). Com senha permitida, um link troca de modo.
-  override('flarum/forum/components/LogInModal', 'footer', function (this: any, original: () => Mithril.Children) {
-    const toggle = !passwordless() && (
-      <p className="LogInModal-magicLinkToggle">
-        <Button
-          className="Button Button--text Button--link"
-          onclick={() => {
-            this.magicLinkUsePassword = !this.magicLinkUsePassword;
-            this.magicLink.ref = null;
-            this.alertAttrs = null;
-          }}
-        >
-          {app.translator.trans(`ramon-magic-link.forum.log_in.${this.magicLinkUsePassword ? 'use_code_link' : 'use_password_link'}`)}
-        </Button>
-      </p>
-    );
-
-    return [toggle, original()];
-  });
-
+  // Sem senha, o "Esqueci minha senha" do rodapé some pelo CSS. A classe não
+  // pode mudar com o modal aberto: o Mithril tiraria o `in` da animação e o
+  // modal ficaria transparente (no passo do código o CSS usa :has()).
   override('flarum/forum/components/LogInModal', 'className', function (this: any, original: () => string) {
-    return this.magicLinkUsePassword ? original() : `${original()} MagicLink--code`;
+    return passwordless() ? `${original()} MagicLink--code` : original();
   });
 
   override('flarum/forum/components/LogInModal', 'onsubmit', function (this: any, original: (e: SubmitEvent) => void, e: any) {
-    if (this.magicLinkUsePassword) return original(e);
+    if (!this.magicLink.ref && !passwordless()) return original(e);
 
     e.preventDefault();
 
@@ -96,30 +109,11 @@ export default function extendLogInModal() {
     verifyCode(this.magicLink, this.onerror.bind(this)).then(() => window.location.reload(), this.loaded.bind(this));
   });
 
-  // O core seleciona a senha quando o e-mail já vem preenchido; aqui ela não existe.
+  // O core seleciona a senha quando o e-mail já vem preenchido; sem senha ela não existe.
   override('flarum/forum/components/LogInModal', 'onready', function (this: any, original: () => void) {
-    if (this.magicLinkUsePassword) return original();
+    if (this.magicLink.ref) return this.$('[name=code]').trigger('focus');
+    if (!passwordless()) return original();
 
-    this.$(this.magicLink.ref ? '[name=code]' : '[name=identification]').trigger('select');
-  });
-
-  extend('flarum/forum/components/LogInModal', 'oninit', function (this: any) {
-    this.magicLinkSend = (resend: boolean) => {
-      const state = this.magicLink;
-      const identification = resend ? state.email : this.identification().trim();
-
-      this.loading = true;
-      this.alertAttrs = null;
-
-      requestCode(state, { type: 'signin', identification, remember: this.remember() }, this.onerror.bind(this)).then(() => {
-        state.email = identification;
-        this.loading = false;
-
-        if (resend) this.alertAttrs = resentAlert();
-
-        m.redraw.sync();
-        this.$('[name=code]').trigger('select');
-      }, this.loaded.bind(this));
-    };
+    this.$('[name=identification]').trigger('select');
   });
 }

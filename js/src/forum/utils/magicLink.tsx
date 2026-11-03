@@ -7,6 +7,7 @@ import type ItemList from 'flarum/common/utils/ItemList';
 import type RequestError from 'flarum/common/utils/RequestError';
 
 import passwordless from '../../common/passwordless';
+import CodeInput from '../components/CodeInput';
 
 export { passwordless };
 
@@ -50,9 +51,6 @@ export function requestCode(
       state.ref = response.ref;
       state.code('');
       state.resendAt = Date.now() + RESEND_DELAY;
-
-      // Redesenha quando o "Enviar um novo código" volta a valer.
-      setTimeout(() => m.redraw(), RESEND_DELAY + 50);
     });
 }
 
@@ -83,21 +81,29 @@ export function honeypotField(state: MagicLinkState): Mithril.Children {
 }
 
 /**
- * O passo do código, com as classes de formulário do core: o tema (Avocado,
- * Canela) estiliza os campos como os do login.
+ * O passo do código: título, texto, as caixas dos dígitos e os links de
+ * reenviar e trocar o e-mail. As classes são as de formulário do core, então
+ * o tema (Avocado, Canela) estiliza como o resto do login.
  */
 export function addCodeFields(
   items: ItemList<Mithril.Children>,
   state: MagicLinkState,
   options: { type: MagicLinkType; loading: boolean; onResend: () => void; onChangeEmail?: () => void }
 ): void {
-  const label = extractText(app.translator.trans('ramon-magic-link.forum.code.label'));
-  const canResend = Date.now() >= state.resendAt;
+  const seconds = Math.ceil((state.resendAt - Date.now()) / 1000);
+
+  // A contagem do "Reenviar código (29s)" redesenha a cada segundo até zerar.
+  if (seconds > 0) setTimeout(() => m.redraw(), 1000);
+
+  items.add('magicLinkHeading', <h3 className="MagicLink-heading">{app.translator.trans('ramon-magic-link.forum.code.heading')}</h3>, 50);
 
   items.add(
     'magicLinkHint',
     <p className="helpText MagicLink-hint">
-      {app.translator.trans(`ramon-magic-link.forum.code.sent_${options.type}`, { email: <strong>{state.email}</strong> })}
+      {/* Com o nome de usuário, o e-mail da conta não aparece: só quem o tem sabe qual é. */}
+      {state.email.includes('@')
+        ? app.translator.trans('ramon-magic-link.forum.code.sent_text', { length: codeLength(), email: <strong>{state.email}</strong> })
+        : app.translator.trans('ramon-magic-link.forum.code.sent_text_username', { length: codeLength(), username: <strong>{state.email}</strong> })}
     </p>,
     40
   );
@@ -105,21 +111,10 @@ export function addCodeFields(
   items.add(
     'magicLinkCode',
     <div className="Form-group MagicLink-codeGroup">
-      <label className="label" for="magicLinkCode">
-        {label}
-      </label>
-      <input
-        id="magicLinkCode"
-        className="FormControl MagicLink-code"
-        name="code"
-        type="text"
-        inputmode="numeric"
-        autocomplete="one-time-code"
-        pattern="[0-9]*"
-        maxlength={codeLength()}
-        placeholder={'0'.repeat(codeLength())}
-        aria-label={label}
-        bidi={state.code}
+      <CodeInput
+        code={state.code}
+        length={codeLength()}
+        label={extractText(app.translator.trans('ramon-magic-link.forum.code.label'))}
         disabled={options.loading}
       />
     </div>,
@@ -129,8 +124,10 @@ export function addCodeFields(
   items.add(
     'magicLinkActions',
     <div className="Form-group MagicLink-actions">
-      <Button className="Button Button--text Button--link" type="button" onclick={options.onResend} disabled={options.loading || !canResend}>
-        {app.translator.trans('ramon-magic-link.forum.code.resend_button')}
+      <Button className="Button Button--text Button--link" type="button" onclick={options.onResend} disabled={options.loading || seconds > 0}>
+        {seconds > 0
+          ? app.translator.trans('ramon-magic-link.forum.code.resend_countdown', { seconds })
+          : app.translator.trans('ramon-magic-link.forum.code.resend_button')}
       </Button>
       {options.onChangeEmail && (
         <Button className="Button Button--text Button--link" type="button" onclick={options.onChangeEmail} disabled={options.loading}>
