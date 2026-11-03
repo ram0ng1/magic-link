@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" role="img" aria-label="Magic Link">
   <rect width="48" height="48" fill="white"/>
   <g transform="translate(-1.5,3)">
-    <rect x="7" y="15" width="30" height="22" rx="4.5" fill="#5B4FE0"/>
+    <rect x="7" y="15" width="30" height="22" rx="4.5" fill="#244C4E"/>
     <path d="M10.5 19.5L22 27.75L33.5 19.5" stroke="white" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M37.5 4.5C38.1 8.9 39.6 10.4 44 11C39.6 11.6 38.1 13.1 37.5 17.5C36.9 13.1 35.4 11.6 31 11C35.4 10.4 36.9 8.9 37.5 4.5Z" fill="#F5A524" stroke="white" stroke-width="2" stroke-linejoin="round" paint-order="stroke"/>
-    <circle cx="42.5" cy="21" r="1.8" fill="#F5A524"/>
+    <path d="M37.5 4.5C38.1 8.9 39.6 10.4 44 11C39.6 11.6 38.1 13.1 37.5 17.5C36.9 13.1 35.4 11.6 31 11C35.4 10.4 36.9 8.9 37.5 4.5Z" fill="#89BA4F" stroke="white" stroke-width="2" stroke-linejoin="round" paint-order="stroke"/>
+    <circle cx="42.5" cy="21" r="1.8" fill="#89BA4F"/>
   </g>
 </svg>
