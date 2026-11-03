@@ -17,6 +17,9 @@ class MagicLinkServiceProvider extends AbstractServiceProvider
 {
     public function register(): void
     {
+        // Checagens extras antes de mandar o código; as integrações acrescentam as delas.
+        $this->container->singleton('ramon-magic-link.request_guards', fn () => []);
+
         // Como o /login do core, as rotas de entrar continuam abertas no modo
         // de manutenção; o resto do fórum segue bloqueado para quem não é admin.
         $this->container->extend('flarum.forum.maintenance_route_exclusions', function (array $routes) {

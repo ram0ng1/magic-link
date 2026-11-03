@@ -19,6 +19,7 @@ use Flarum\User\Exception\PermissionDeniedException;
 use Flarum\User\User;
 use Flarum\User\UserRepository;
 use Flarum\User\UserValidator;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Laminas\Diactoros\Response\JsonResponse;
@@ -50,7 +51,8 @@ class RequestMagicLinkController implements RequestHandlerInterface
         protected MagicLink $magicLink,
         protected UserRepository $users,
         protected UserValidator $userValidator,
-        protected TranslatorInterface $translator
+        protected TranslatorInterface $translator,
+        protected Container $container
     ) {
     }
 
@@ -67,6 +69,10 @@ class RequestMagicLinkController implements RequestHandlerInterface
         // Campo invisível que só robô preenche: finge o envio.
         if (trim((string) Arr::get($body, 'honeypot', '')) !== '') {
             return $this->respond();
+        }
+
+        foreach ($this->container->make('ramon-magic-link.request_guards') as $guard) {
+            $this->container->make($guard)->check($type, $body, $actor);
         }
 
         if ($type === MagicToken::TYPE_REAUTH) {

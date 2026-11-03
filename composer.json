@@ -36,12 +36,14 @@
     "require-dev": {
         "flarum/phpstan": "^2.0",
         "flarum/testing": "^2.0",
+        "fof/recaptcha": "^2.0",
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^11.5 || ^12.5.22 || ^13.2.0",
         "roave/security-advisories": "dev-latest"
     },
     "suggest": {
-        "flarum/gdpr": "Account erasure without asking for a password that the member does not have."
+        "flarum/gdpr": "Account erasure without asking for a password that the member does not have.",
+        "fof/recaptcha": "Asks for the reCAPTCHA before sending a sign in or sign up code."
     },
     "autoload": {
         "psr-4": {
@@ -62,7 +64,8 @@
                 "backgroundColor": "#fff"
             },
             "optional-dependencies": [
-                "flarum/gdpr"
+                "flarum/gdpr",
+                "fof/recaptcha"
             ]
         },
         "flarum-cli": {
