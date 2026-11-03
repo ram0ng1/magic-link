@@ -9,4 +9,9 @@ export default function extendSettingsPage() {
   extend('flarum/forum/components/SettingsPage', 'accountItems', function (items: ItemList<Mithril.Children>) {
     if (passwordless()) items.remove('changePassword');
   });
+
+  // O Canela repete o "Alterar senha" na aba Segurança.
+  extend('flarum/forum/components/UserSecurityPage', 'settingsItems', function (items: ItemList<Mithril.Children>) {
+    if (passwordless()) items.remove('canelaPassword');
+  });
 }

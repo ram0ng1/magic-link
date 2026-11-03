@@ -5,8 +5,9 @@
   margin-bottom: 15px;
   text-align: center;
 
+  // Só quebra o e-mail quando ele não cabe sozinho na linha.
   strong {
-    word-break: break-all;
+    overflow-wrap: break-word;
   }
 }
 
@@ -14,7 +15,8 @@
   text-align: left;
 }
 
-.MagicLink-code.FormControl {
+// input. na frente: vence o alinhamento à esquerda dos campos do Canela.
+input.MagicLink-code.FormControl {
   font-family: var(--font-family-monospace, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
   font-size: 22px;
   font-weight: 600;
@@ -24,11 +26,27 @@
   text-indent: 0.5em;
 }
 
-.MagicLink-actions {
+// Vence o `.Form--centered .Button` do core (botão de 50px, largura total).
+.Form--centered .MagicLink-actions {
   display: flex;
+  // O .Form-group do core é coluna.
+  flex-direction: row;
   flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 4px 12px;
+  justify-content: center;
+  gap: 4px 16px;
+
+  .Button {
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 4px 6px;
+    font-size: 14px;
+  }
+}
+
+// O texto do core ("enviaremos um link para redefinir") não vale sem senha.
+.ForgotPasswordModal.MagicLink--passwordless .Form-header {
+  display: none;
 }
 
 // Fora da tela em vez de display: none, que alguns robôs pulam.
@@ -42,4 +60,9 @@
 
 .LogInModal-magicLinkToggle {
   margin-bottom: 8px;
+}
+
+// Entrar por código: o link "Esqueci minha senha" do rodapé do core não vale.
+.LogInModal.MagicLink--code .LogInModal-forgotPassword {
+  display: none;
 }

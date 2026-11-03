@@ -32,6 +32,10 @@ export default function extendForgotPasswordModal() {
     );
   });
 
+  override('flarum/forum/components/ForgotPasswordModal', 'className', function (this: any, original: () => string) {
+    return passwordless() ? `${original()} MagicLink--passwordless` : original();
+  });
+
   override('flarum/forum/components/ForgotPasswordModal', 'onsubmit', function (this: any, original: (e: SubmitEvent) => void, e: any) {
     if (!passwordless()) return original(e);
 

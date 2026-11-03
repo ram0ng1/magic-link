@@ -38,6 +38,10 @@ export default function extendChangeEmailModal() {
 
     if (this.magicLink.ref) {
       addCodeFields(items, this.magicLink, { type: 'reauth', loading: this.loading, onResend: () => this.magicLinkSend(true) });
+
+      // O core adiciona tudo com prioridade 0: o novo e-mail fica em cima do código.
+      if (items.has('email')) items.setPriority('email', 50);
+      if (items.has('submit')) items.setPriority('submit', 0);
     }
 
     if (items.has('submit')) {

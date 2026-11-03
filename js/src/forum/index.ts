@@ -8,12 +8,18 @@ import extendSettingsPage from './extenders/extendSettingsPage';
 import extendSignUpModal from './extenders/extendSignUpModal';
 import openPendingRegistration from './openPendingRegistration';
 
-app.initializers.add('ramon-magic-link', () => {
-  extendLogInModal();
-  extendSignUpModal();
-  extendChangeEmailModal();
-  extendForgotPasswordModal();
-  extendSettingsPage();
-  extendEditUserModal();
-  openPendingRegistration();
-});
+// Prioridade -100: roda depois dos temas (Avocado, Canela), que também
+// estendem estes modais; assim os itens de senha que eles põem saem também.
+app.initializers.add(
+  'ramon-magic-link',
+  () => {
+    extendLogInModal();
+    extendSignUpModal();
+    extendChangeEmailModal();
+    extendForgotPasswordModal();
+    extendSettingsPage();
+    extendEditUserModal();
+    openPendingRegistration();
+  },
+  -100
+);

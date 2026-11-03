@@ -25,6 +25,8 @@ export default function extendLogInModal() {
     const state = this.magicLink;
 
     items.remove('password');
+    // O "Esqueci minha senha" que o Canela põe no formulário.
+    items.remove('canelaForgot');
 
     if (state.ref) {
       items.remove('identification');
@@ -52,7 +54,8 @@ export default function extendLogInModal() {
     }
   });
 
-  // Sem senha, some o "Esqueci minha senha"; com senha permitida, um link troca de modo.
+  // O rodapé continua o do core ou o do tema; sem senha, o "Esqueci minha
+  // senha" dele some pelo CSS (classe abaixo). Com senha permitida, um link troca de modo.
   override('flarum/forum/components/LogInModal', 'footer', function (this: any, original: () => Mithril.Children) {
     const toggle = !passwordless() && (
       <p className="LogInModal-magicLinkToggle">
@@ -69,18 +72,11 @@ export default function extendLogInModal() {
       </p>
     );
 
-    if (this.magicLinkUsePassword) return [original(), toggle];
+    return [toggle, original()];
+  });
 
-    return [
-      toggle,
-      app.forum.attribute<boolean>('allowSignUp') && (
-        <p className="LogInModal-signUp">
-          {app.translator.trans('core.forum.log_in.sign_up_text', {
-            a: <Button className="Button Button--text Button--link" onclick={this.signUp.bind(this)} />,
-          })}
-        </p>
-      ),
-    ];
+  override('flarum/forum/components/LogInModal', 'className', function (this: any, original: () => string) {
+    return this.magicLinkUsePassword ? original() : `${original()} MagicLink--code`;
   });
 
   override('flarum/forum/components/LogInModal', 'onsubmit', function (this: any, original: (e: SubmitEvent) => void, e: any) {
