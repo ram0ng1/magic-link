@@ -12,11 +12,11 @@
 namespace Ramon\MagicLink\Api\Throttler;
 
 use Psr\Http\Message\ServerRequestInterface;
-use Ramon\MagicLink\Token\TokenProvider;
+use Ramon\MagicLink\Token\RateLimiter;
 
 /**
- * Limite por IP dos pedidos de código. O limite por e-mail fica no controller,
- * que finge o envio em vez de responder 429 (o 429 revelaria a conta).
+ * Limite por IP dos pedidos de código. Conta todo pedido, exista a conta ou
+ * não; o limite por e-mail fica no controller.
  */
 class MagicLinkThrottler
 {
@@ -24,7 +24,7 @@ class MagicLinkThrottler
     public const WINDOW = 600;
 
     public function __construct(
-        protected TokenProvider $tokens
+        protected RateLimiter $limiter
     ) {
     }
 
@@ -40,6 +40,6 @@ class MagicLinkThrottler
             return null;
         }
 
-        return $this->tokens->recentCount('ip_address', $ip, self::WINDOW) >= self::MAX_PER_IP ? true : null;
+        return $this->limiter->hit('ip:'.$ip, self::WINDOW) > self::MAX_PER_IP ? true : null;
     }
 }

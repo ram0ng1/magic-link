@@ -11,7 +11,6 @@
 
 namespace Ramon\MagicLink\Tests\integration\api;
 
-use Flarum\User\EmailToken;
 use Flarum\User\PasswordToken;
 use Flarum\User\User;
 use Ramon\MagicLink\Tests\integration\MagicLinkTestCase;
@@ -94,9 +93,27 @@ class PasswordlessTest extends MagicLinkTestCase
         $this->assertSame(401, $this->changeEmail('magic-link:'.$issued->model->ref.':'.$this->wrongCode($issued->code)));
         $this->assertSame(200, $this->changeEmail('magic-link:'.$issued->model->ref.':'.$issued->code));
 
-        // Uso único (o throttle de troca de e-mail do core contaria o token da troca anterior).
-        EmailToken::query()->delete();
-        $this->assertSame(401, $this->changeEmail('magic-link:'.$issued->model->ref.':'.$issued->code));
+    }
+
+    public function test_bilhete_de_reautenticacao_vale_poucas_vezes_e_so_por_10_minutos(): void
+    {
+        $this->requestCode(['type' => 'reauth'], 2);
+        $issued = $this->lastIssued();
+        $ticket = 'magic-link:'.$issued->model->ref.':'.$issued->code;
+        $user = User::query()->findOrFail(2);
+
+        $this->assertTrue($user->checkPassword($ticket));
+        $this->assertTrue($user->checkPassword($ticket));
+        $this->assertTrue($user->checkPassword($ticket));
+        $this->assertFalse($user->checkPassword($ticket));
+
+        $this->requestCode(['type' => 'reauth'], 2);
+        $issued = $this->lastIssued();
+        $ticket = 'magic-link:'.$issued->model->ref.':'.$issued->code;
+
+        $this->assertTrue($user->checkPassword($ticket));
+        \Ramon\MagicLink\Token\MagicToken::query()->whereKey($issued->model->id)->update(['first_used_at' => \Carbon\Carbon::now()->subMinutes(11)]);
+        $this->assertFalse($user->checkPassword($ticket));
     }
 
     public function test_codigo_de_outra_conta_nao_serve(): void

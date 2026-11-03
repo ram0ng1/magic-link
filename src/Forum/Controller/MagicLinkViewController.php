@@ -38,6 +38,7 @@ class MagicLinkViewController extends AbstractHtmlController
             ->make('ramon-magic-link::confirm')
             ->with('valid', $token !== null)
             ->with('type', $token === null ? 'signin' : $token->type)
+            ->with('email', $token === null ? '' : $token->email)
             ->with('csrfToken', $request->getAttribute('session')->token());
     }
 }

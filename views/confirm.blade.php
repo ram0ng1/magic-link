@@ -11,6 +11,9 @@
 
             <p>{{ $translator->trans('ramon-magic-link.views.confirm.'.$type.'_text', ['forum' => $settings->get('forum_title')]) }}</p>
 
+            {{-- Um link encaminhado por outra pessoa leva à conta dela: o e-mail mostra de quem é. --}}
+            <p><strong>{{ $email }}</strong></p>
+
             <p class="form-group">
                 <button type="submit" class="button">{{ $translator->trans('ramon-magic-link.views.confirm.'.$type.'_button') }}</button>
             </p>

@@ -11,6 +11,8 @@
 
 namespace Ramon\MagicLink\Auth;
 
+use Flarum\Foundation\DispatchEventsTrait;
+use Flarum\Http\AccessToken;
 use Flarum\Http\RememberAccessToken;
 use Flarum\Http\SessionAccessToken;
 use Flarum\Http\SessionAuthenticator;
@@ -19,11 +21,11 @@ use Flarum\User\RegistrationToken;
 use Flarum\User\User;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Session\Session;
-use Illuminate\Support\Str;
 use Psr\Http\Message\ServerRequestInterface;
 use Ramon\MagicLink\MagicLink;
 use Ramon\MagicLink\Token\InvalidMagicTokenException;
 use Ramon\MagicLink\Token\MagicToken;
+use Ramon\MagicLink\Token\TokenProvider;
 
 /**
  * O que acontece depois do link ou do código: entrar na conta que já existe
@@ -32,10 +34,13 @@ use Ramon\MagicLink\Token\MagicToken;
  */
 class MagicSignIn
 {
+    use DispatchEventsTrait;
+
     public function __construct(
         protected SessionAuthenticator $authenticator,
         protected Dispatcher $events,
-        protected MagicLink $magicLink
+        protected MagicLink $magicLink,
+        protected TokenProvider $tokens
     ) {
     }
 
@@ -46,17 +51,18 @@ class MagicSignIn
     {
         $user = $token->user_id !== null ? User::query()->find($token->user_id) : $this->findByEmail($token->email);
 
-        // Pedido para uma conta cujo e-mail mudou depois: o link era do e-mail antigo.
-        if ($user && strcasecmp($user->email, $token->email) !== 0) {
+        // Pedido para uma conta cujo e-mail mudou depois (o link era do e-mail
+        // antigo), ou cadastro depois que o admin fechou os cadastros: o token
+        // não vai dar certo nunca mais, então some de vez.
+        if (($user && strcasecmp($user->email, $token->email) !== 0)
+            || (! $user && ($token->type !== MagicToken::TYPE_SIGNUP || ! $this->magicLink->allowsSignUp()))) {
+            $this->tokens->revoke($token);
+
             throw new InvalidMagicTokenException();
         }
 
         if ($user) {
             return $this->logIn($user, $token, $request);
-        }
-
-        if ($token->type !== MagicToken::TYPE_SIGNUP) {
-            throw new InvalidMagicTokenException();
         }
 
         $username = $token->dataValue('username');
@@ -74,6 +80,15 @@ class MagicSignIn
 
     protected function logIn(User $user, MagicToken $token, ServerRequestInterface $request): MagicSignInResult
     {
+        // Conta que nunca confirmou o e-mail pode ter sido criada por outra
+        // pessoa com o endereço de quem agora prova ser o dono. Antes de
+        // confirmar, sai tudo o que dava acesso a ela: senha, sessões e logins externos.
+        if (! $user->is_email_confirmed) {
+            $user->password = '';
+            AccessToken::query()->where('user_id', $user->id)->delete();
+            $user->loginProviders()->delete();
+        }
+
         // O código chegou no e-mail da conta: isso confirma o endereço.
         $user->activate();
 
@@ -82,14 +97,7 @@ class MagicSignIn
         }
 
         $user->save();
-
-        // A fof/gdpr pula a senha de quem tem um login externo.
-        if (! $user->loginProviders()->where('provider', MagicLink::PROVIDER)->exists()) {
-            $user->loginProviders()->create([
-                'provider' => MagicLink::PROVIDER,
-                'identifier' => (string) Str::uuid(),
-            ]);
-        }
+        $this->dispatchEventsFor($user);
 
         $accessToken = $token->dataValue('remember')
             ? RememberAccessToken::generate($user->id)

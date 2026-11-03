@@ -79,11 +79,4 @@ return [
         ->get('/magic-link/{token:[A-Za-z0-9]+}', 'magic-link.confirm', Forum\Controller\MagicLinkViewController::class)
         ->post('/magic-link/{token:[A-Za-z0-9]+}', 'magic-link.confirm.submit', Forum\Controller\MagicLinkController::class),
 
-    // A fof/gdpr pede a senha para apagar a conta, a não ser que a pessoa
-    // tenha um login externo; este atributo esconde o campo no modal.
-    (new Extend\Conditional())
-        ->whenExtensionEnabled('flarum-gdpr', fn () => [
-            (new Extend\ApiResource(ForumResource::class))
-                ->fields(Api\GdprForumFields::class),
-        ]),
 ];

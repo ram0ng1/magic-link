@@ -43,7 +43,7 @@ class VerifyCodeTest extends MagicLinkTestCase
         $this->assertSame(0, MagicToken::query()->findOrFail($issued->model->id)->used_count);
     }
 
-    public function test_entrar_apaga_a_senha_e_registra_o_provedor(): void
+    public function test_entrar_apaga_a_senha(): void
     {
         $this->requestCode(['identification' => 'normal']);
         $issued = $this->lastIssued();
@@ -52,7 +52,6 @@ class VerifyCodeTest extends MagicLinkTestCase
 
         $user = User::query()->findOrFail(2);
         $this->assertSame('', $user->getAttributes()['password']);
-        $this->assertTrue(LoginProvider::query()->where('user_id', 2)->where('provider', 'magic-link')->exists());
     }
 
     public function test_cinco_erros_bloqueiam_o_codigo(): void

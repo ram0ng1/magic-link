@@ -107,13 +107,13 @@ class RequestMagicLinkTest extends MagicLinkTestCase
         $this->assertSame(403, $response->getStatusCode());
     }
 
-    public function test_limite_por_email_finge_o_envio(): void
+    public function test_limite_por_email(): void
     {
-        for ($i = 0; $i < 7; $i++) {
+        for ($i = 0; $i < 5; $i++) {
             $this->assertSame(201, $this->requestCode(['identification' => 'normal@machine.local'])->getStatusCode());
         }
 
-        $this->assertSame(5, MagicToken::query()->count());
+        $this->assertSame(429, $this->requestCode(['identification' => 'normal@machine.local'])->getStatusCode());
         $this->assertCount(5, RecordingMailer::$sent);
     }
 

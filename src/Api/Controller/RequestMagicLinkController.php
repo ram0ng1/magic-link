@@ -12,6 +12,7 @@
 namespace Ramon\MagicLink\Api\Controller;
 
 use Flarum\Foundation\ValidationException;
+use Flarum\Post\Exception\FloodingException;
 use Flarum\Http\RequestUtil;
 use Flarum\Locale\TranslatorInterface;
 use Flarum\User\Exception\PermissionDeniedException;
@@ -27,14 +28,15 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Ramon\MagicLink\Mail\MagicLinkMailer;
 use Ramon\MagicLink\MagicLink;
 use Ramon\MagicLink\Token\MagicToken;
+use Ramon\MagicLink\Token\RateLimiter;
 use Ramon\MagicLink\Token\TokenProvider;
 
 /**
  * POST /api/magic-link: manda o código e o link para o e-mail.
  *
  * A resposta é sempre a mesma `ref`, exista a conta ou não (para um e-mail
- * desconhecido no login a ref é inventada e nada é enviado), então ela não
- * serve para descobrir quem tem conta no fórum.
+ * desconhecido no login a ref é inventada e nada é enviado), e os limites
+ * contam o pedido, não a conta: nada aqui revela quem tem conta no fórum.
  */
 class RequestMagicLinkController implements RequestHandlerInterface
 {
@@ -43,6 +45,7 @@ class RequestMagicLinkController implements RequestHandlerInterface
 
     public function __construct(
         protected TokenProvider $tokens,
+        protected RateLimiter $limiter,
         protected MagicLinkMailer $mailer,
         protected MagicLink $magicLink,
         protected UserRepository $users,
@@ -68,6 +71,7 @@ class RequestMagicLinkController implements RequestHandlerInterface
 
         if ($type === MagicToken::TYPE_REAUTH) {
             $actor->assertRegistered();
+            $this->assertWithinLimit($actor->email);
 
             return $this->issue($type, $actor->email, $actor, [], $request);
         }
@@ -89,6 +93,8 @@ class RequestMagicLinkController implements RequestHandlerInterface
         if ($type === MagicToken::TYPE_SIGNUP) {
             return $this->signUp($identification, $body, $remember, $request);
         }
+
+        $this->assertWithinLimit($identification);
 
         $user = $this->findUser($identification);
 
@@ -114,23 +120,25 @@ class RequestMagicLinkController implements RequestHandlerInterface
             throw new ValidationException(['email' => $this->translator->trans('validation.email', ['attribute' => $this->translator->trans('validation.attributes.email')])]);
         }
 
+        // O nome de usuário é público e é validado antes de olhar o e-mail:
+        // assim o erro é o mesmo com ou sem conta. Vazio não passa, porque
+        // com o token o core não exige o nome no /register.
+        $username = trim((string) Arr::get($body, 'username', ''));
+
+        if ($username === '') {
+            throw new ValidationException(['username' => $this->translator->trans('validation.required', ['attribute' => $this->translator->trans('validation.attributes.username')])]);
+        }
+
+        $this->userValidator->assertValid(['username' => $username]);
+        $this->assertWithinLimit($email);
+
         // Quem já tem conta recebe o código de entrar: o cadastro não conta
         // que o e-mail é usado, e a pessoa entra do mesmo jeito.
         if ($user = $this->findUser($email)) {
             return $this->issue(MagicToken::TYPE_SIGNIN, $user->email, $user, ['remember' => $remember], $request);
         }
 
-        $data = ['remember' => true];
-        $username = trim((string) Arr::get($body, 'username', ''));
-
-        // O nome de usuário é público: validar aqui evita um código que só
-        // falharia no fim do cadastro.
-        if ($username !== '') {
-            $this->userValidator->assertValid(['username' => $username]);
-            $data['username'] = $username;
-        }
-
-        return $this->issue(MagicToken::TYPE_SIGNUP, $email, null, $data, $request);
+        return $this->issue(MagicToken::TYPE_SIGNUP, $email, null, ['remember' => true, 'username' => $username], $request);
     }
 
     /**
@@ -138,17 +146,25 @@ class RequestMagicLinkController implements RequestHandlerInterface
      */
     protected function issue(string $type, string $email, ?User $user, array $data, ServerRequestInterface $request): ResponseInterface
     {
-        // Passou do limite: não envia, mas responde igual.
-        if ($this->tokens->recentCount('email', $email, self::EMAIL_WINDOW) >= self::MAX_PER_EMAIL) {
-            return $this->respond();
-        }
-
         $ip = $request->getAttribute('ipAddress');
         $issued = $this->tokens->issue($type, $email, $user, $data, is_string($ip) ? $ip : null);
 
         $this->mailer->send($issued);
 
         return $this->respond($issued->model->ref);
+    }
+
+    /**
+     * Conta o pedido por e-mail ou nome digitado, exista a conta ou não: o
+     * 429 vale igual para os dois, então pode ser mostrado à pessoa.
+     *
+     * @throws FloodingException
+     */
+    protected function assertWithinLimit(string $identification): void
+    {
+        if ($this->limiter->hit('email:'.Str::lower($identification), self::EMAIL_WINDOW) > self::MAX_PER_EMAIL) {
+            throw new FloodingException();
+        }
     }
 
     protected function findUser(string $identification): ?User

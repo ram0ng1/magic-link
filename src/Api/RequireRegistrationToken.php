@@ -13,13 +13,15 @@ namespace Ramon\MagicLink\Api;
 
 use Flarum\Api\Context;
 use Flarum\User\Exception\PermissionDeniedException;
+use Flarum\User\RegistrationToken;
 use Illuminate\Support\Arr;
 use Ramon\MagicLink\MagicLink;
 
 /**
  * Sem senha, o cadastro só termina com o token de um login externo (o código
- * deste e-mail ou um provedor OAuth): o e-mail já chega confirmado. O admin
- * continua criando usuários direto.
+ * deste e-mail ou um provedor OAuth) que traga o e-mail confirmado. Um token
+ * que só sugere o e-mail deixaria cadastrar o endereço de outra pessoa. O
+ * admin continua criando usuários direto.
  */
 class RequireRegistrationToken
 {
@@ -37,7 +39,10 @@ class RequireRegistrationToken
             return;
         }
 
-        if (empty(Arr::get($context->body(), 'data.attributes.token'))) {
+        $value = Arr::get($context->body(), 'data.attributes.token');
+        $token = is_string($value) && $value !== '' ? RegistrationToken::query()->find($value) : null;
+
+        if (! $token instanceof RegistrationToken || empty($token->user_attributes['email'])) {
             throw new PermissionDeniedException();
         }
     }
