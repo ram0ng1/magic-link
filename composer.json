@@ -58,9 +58,8 @@
             "title": "Magic Link",
             "category": "feature",
             "icon": {
-                "name": "fas fa-magic",
-                "backgroundColor": "#6c5ce7",
-                "color": "#fff"
+                "image": "icon.svg",
+                "backgroundColor": "#fff"
             },
             "optional-dependencies": [
                 "flarum/gdpr"
