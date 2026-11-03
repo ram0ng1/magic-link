@@ -4,7 +4,7 @@ ramon-magic-link:
       allow_password_label: Also allow passwords
       allow_password_help: "Off (recommended): members sign in and sign up only with the code or link sent by email; passwords are not accepted, stored or reset. On: the email code is offered alongside the password."
       token_lifetime_label: Code and link lifetime (minutes)
-      token_lifetime_help: "Between 5 and 1440 (24 hours). After its first use a link keeps working for 10 more minutes, so email scanners that open it first don't use it up. If email delivery breaks, run php flarum magic-link:login-url <username> on the server to get a sign in link."
+      token_lifetime_help: "Between 5 and 1440 (24 hours). After its first use a link keeps working for 10 more minutes, so email scanners that open it first don't use it up. If email delivery breaks, run php flarum magic-link:login-url followed by the username on the server to get a sign in link."
 
   forum:
     log_in:
@@ -36,7 +36,8 @@ ramon-magic-link:
       log_in_button: Log in by email
 
   email:
-    expiry: The code and the link expire in {minutes} minutes.
+    expiry_minutes: The code and the link expire in {minutes, plural, one {# minute} other {# minutes}}.
+    expiry_hours: The code and the link expire in {hours, plural, one {# hour} other {# hours}}.
     ignore: If you didn't request this, you can ignore this email. Nobody can sign in without it.
 
     signin:

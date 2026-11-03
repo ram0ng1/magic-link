@@ -45,10 +45,12 @@ class MagicLinkMailer
 
         $forum = (string) $this->settings->get('forum_title');
         $key = 'ramon-magic-link.email.'.$model->type;
+        $minutes = $this->magicLink->lifetimeMinutes();
         $params = [
             'forum' => $forum,
             'code' => $issued->code,
-            'minutes' => $this->magicLink->lifetimeMinutes(),
+            'minutes' => $minutes,
+            'hours' => intdiv($minutes, 60),
         ];
 
         try {
@@ -56,7 +58,8 @@ class MagicLinkMailer
             $title = $this->translator->trans($key.'.title', $params);
             $intro = $this->translator->trans($key.'.intro', $params);
             $button = $this->translator->trans($key.'.button', $params);
-            $expiry = $this->translator->trans('ramon-magic-link.email.expiry', $params);
+            // "24 horas" lê melhor que "1440 minutos".
+            $expiry = $this->translator->trans('ramon-magic-link.email.'.($minutes % 60 === 0 ? 'expiry_hours' : 'expiry_minutes'), $params);
             $ignore = $this->translator->trans('ramon-magic-link.email.ignore', $params);
         } finally {
             $this->translator->setLocale($previousLocale);

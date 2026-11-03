@@ -4,7 +4,7 @@ ramon-magic-link:
       allow_password_label: Permitir senha também
       allow_password_help: "Desligado (recomendado): os membros entram e se cadastram só com o código ou o link enviado por e-mail; o fórum não aceita, não guarda e não redefine senhas. Ligado: o código por e-mail aparece junto com a senha."
       token_lifetime_label: Validade do código e do link (minutos)
-      token_lifetime_help: "Entre 5 e 1440 (24 horas). Depois do primeiro uso, o link ainda vale por 10 minutos, para que leitores de e-mail que o abrem antes não o gastem. Se o envio de e-mail quebrar, rode php flarum magic-link:login-url <usuário> no servidor para ter um link de entrada."
+      token_lifetime_help: "Entre 5 e 1440 (24 horas). Depois do primeiro uso, o link ainda vale por 10 minutos, para que leitores de e-mail que o abrem antes não o gastem. Se o envio de e-mail quebrar, rode no servidor php flarum magic-link:login-url seguido do nome de usuário para ter um link de entrada."
 
   forum:
     log_in:
@@ -36,7 +36,8 @@ ramon-magic-link:
       log_in_button: Entrar por e-mail
 
   email:
-    expiry: O código e o link expiram em {minutes} minutos.
+    expiry_minutes: O código e o link expiram em {minutes, plural, one {# minuto} other {# minutos}}.
+    expiry_hours: O código e o link expiram em {hours, plural, one {# hora} other {# horas}}.
     ignore: Se não foi você que pediu, ignore este e-mail. Ninguém entra sem ele.
 
     signin:

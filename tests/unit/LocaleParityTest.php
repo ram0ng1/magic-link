@@ -128,6 +128,29 @@ final class LocaleParityTest extends TestCase
         self::assertSame([], $diff, "Placeholders diferentes do en em $locale.yml:\n  - ".implode("\n  - ", $diff));
     }
 
+    /**
+     * O tradutor do Flarum lê `<nome>` como tag: uma tag desconhecida (ex.:
+     * "<usuário>" num texto de ajuda) quebra o boot do JS inteiro.
+     */
+    public function test_so_usa_tags_conhecidas(): void
+    {
+        $bad = [];
+
+        foreach (self::LOCALES as $locale) {
+            foreach ($this->entriesOf($locale) as $key => $text) {
+                preg_match_all('/<\/?([^\s>\/]+)[^>]*>/u', $text, $m);
+
+                foreach ($m[1] as $tag) {
+                    if (! in_array($tag, ['a', 'b', 'i', 'em', 'strong', 'code', 'kbd', 'br', 'span'], true)) {
+                        $bad[] = "$locale: $key <$tag>";
+                    }
+                }
+            }
+        }
+
+        self::assertSame([], $bad, "Tags que o tradutor não conhece:\n  - ".implode("\n  - ", $bad));
+    }
+
     public function test_todos_os_idiomas_sao_lidos(): void
     {
         foreach (self::LOCALES as $locale) {
