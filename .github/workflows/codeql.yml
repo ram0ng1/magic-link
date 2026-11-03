@@ -1,0 +1,52 @@
+name: CodeQL
+
+# CodeQL (JS/TS). PHP não é suportado pelo CodeQL; cobertura
+# PHP é feita por PHPStan no ci.yml e Semgrep (security.yml).
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '0 6 * * 1'  # toda segunda, 06:00 UTC
+
+# Nega tudo ao GITHUB_TOKEN por padrão; cada job declara o que precisa.
+permissions: {}
+
+concurrency:
+  group: codeql-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analisar (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['javascript-typescript']
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2  # v2.22.2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Inicializar CodeQL
+        uses: github/codeql-action/init@b56ba49b26e50535fa1e7f7db0f4f7b4bf65d80d  # v3.28.10
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      - name: Analisar
+        uses: github/codeql-action/analyze@b56ba49b26e50535fa1e7f7db0f4f7b4bf65d80d  # v3.28.10
+        with:
+          category: "/language:${{ matrix.language }}"

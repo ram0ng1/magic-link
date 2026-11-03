@@ -1,0 +1,105 @@
+{
+    "name": "ramon/magic-link",
+    "description": "Passwordless sign in and sign up for Flarum 2 with a magic link and a one-time code sent by email",
+    "keywords": [
+        "flarum",
+        "magic-link",
+        "passwordless",
+        "login",
+        "one-time-code"
+    ],
+    "type": "flarum-extension",
+    "license": "MIT",
+    "homepage": "https://github.com/ram0ng1/magic-link",
+    "authors": [
+        {
+            "name": "Ramon Guilherme",
+            "email": "ramon@ramonguilherme.com.br",
+            "homepage": "https://ramonguilherme.com.br",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/ram0ng1/magic-link/issues",
+        "source": "https://github.com/ram0ng1/magic-link"
+    },
+    "funding": [
+        {
+            "type": "website",
+            "url": "https://donate.stripe.com/fZe5o66nebkf39S28a"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "flarum/core": "^2.0.0"
+    },
+    "require-dev": {
+        "flarum/phpstan": "^2.0",
+        "flarum/testing": "^2.0",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^11.5 || ^12.5.22 || ^13.2.0",
+        "roave/security-advisories": "dev-latest"
+    },
+    "suggest": {
+        "flarum/gdpr": "Account erasure without asking for a password that the member does not have."
+    },
+    "autoload": {
+        "psr-4": {
+            "Ramon\\MagicLink\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Ramon\\MagicLink\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "flarum-extension": {
+            "title": "Magic Link",
+            "category": "feature",
+            "icon": {
+                "name": "fas fa-magic",
+                "backgroundColor": "#6c5ce7",
+                "color": "#fff"
+            },
+            "optional-dependencies": [
+                "flarum/gdpr"
+            ]
+        },
+        "flarum-cli": {
+            "modules": {
+                "admin": true,
+                "forum": true,
+                "js": true,
+                "jsCommon": false,
+                "css": true,
+                "locale": true,
+                "typescript": true,
+                "backendTesting": true
+            }
+        }
+    },
+    "scripts": {
+        "analyse:phpstan": "phpstan analyse --memory-limit=2G",
+        "clear-cache:phpstan": "phpstan clear-result-cache",
+        "test": [
+            "@test:unit",
+            "@test:integration"
+        ],
+        "test:unit": "phpunit -c tests/phpunit.unit.xml",
+        "test:integration": [
+            "Composer\\Config::disableProcessTimeout",
+            "phpunit -c tests/phpunit.integration.xml"
+        ],
+        "test:setup": "@php tests/integration/setup.php"
+    },
+    "scripts-descriptions": {
+        "analyse:phpstan": "Run static analysis",
+        "test": "Runs all tests.",
+        "test:unit": "Runs all unit tests.",
+        "test:integration": "Runs all integration tests.",
+        "test:setup": "Sets up a database for use with integration tests. Execute this only once."
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

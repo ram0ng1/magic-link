@@ -1,0 +1,8 @@
+# Mantém o `semgrep scan` local consistente com o security.yml.
+# (Semgrep já ignora node_modules/ e vendor/ por padrão.)
+js/dist/
+js/node_modules/
+vendor/
+*.min.js
+# Scripts da pipeline, fora do SAST do produto.
+.github/scripts/

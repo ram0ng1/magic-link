@@ -1,0 +1,12 @@
+node_modules
+vendor
+composer.lock
+.vscode/settings.json
+.vscode
+.claude
+.claudeignore
+
+# Testes
+.phpunit.cache
+.phpunit.result.cache
+tests/integration/tmp

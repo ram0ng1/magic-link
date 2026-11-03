@@ -1,0 +1,68 @@
+ramon-magic-link:
+  admin:
+    settings:
+      allow_password_label: Permitir senha também
+      allow_password_help: "Desligado (recomendado): os membros entram e se cadastram só com o código ou o link enviado por e-mail; o fórum não aceita, não guarda e não redefine senhas. Ligado: o código por e-mail aparece junto com a senha."
+      token_lifetime_label: Validade do código e do link (minutos)
+      token_lifetime_help: "Entre 5 e 1440 (24 horas). Depois do primeiro uso, o link ainda vale por 10 minutos, para que leitores de e-mail que o abrem antes não o gastem. Se o envio de e-mail quebrar, rode php flarum magic-link:login-url <usuário> no servidor para ter um link de entrada."
+
+  forum:
+    log_in:
+      identification_placeholder: E-mail ou nome de usuário
+      submit_button: Enviar código de acesso
+      use_password_link: Entrar com senha
+      use_code_link: Entrar com código por e-mail
+
+    sign_up:
+      submit_button: Continuar com e-mail
+
+    code:
+      sent_signin: Se existir uma conta para {email}, enviamos para ela um código e um link de acesso.
+      sent_signup: Enviamos um código para {email}. Digite-o para confirmar o endereço e criar sua conta.
+      sent_reauth: Enviamos um código para {email}. Digite-o para confirmar que é você.
+      label: Código do e-mail
+      submit_button: Verificar código
+      resend_button: Enviar um novo código
+      resent_message: Um novo código está a caminho.
+      change_email_link: Usar outro e-mail
+      invalid_message: Este código é inválido ou expirou. Confira o e-mail mais recente ou peça um novo código.
+
+    change_email:
+      send_code_button: Enviar código para o meu e-mail atual
+      submit_button: Confirmar e salvar
+
+    forgot_password:
+      passwordless_text: Este fórum não usa senha. Entre com um código enviado para o seu e-mail.
+      log_in_button: Entrar por e-mail
+
+  email:
+    expiry: O código e o link expiram em {minutes} minutos.
+    ignore: Se não foi você que pediu, ignore este e-mail. Ninguém entra sem ele.
+
+    signin:
+      subject: "Seu código de acesso a {forum}: {code}"
+      title: Entrar em {forum}
+      intro: Digite este código para entrar em {forum} ou use o botão abaixo.
+      button: Entrar
+
+    signup:
+      subject: "Confirme seu e-mail em {forum}: {code}"
+      title: Boas-vindas a {forum}
+      intro: Digite este código para confirmar seu e-mail e terminar de criar sua conta, ou use o botão abaixo.
+      button: Confirmar e-mail
+
+    reauth:
+      subject: "Código de confirmação de {forum}: {code}"
+      title: Confirme que é você
+      intro: Digite este código em {forum} para confirmar a alteração na sua conta.
+      button: Confirmar
+
+  views:
+    confirm:
+      title: Entrar
+      signin_text: Use o botão para entrar em {forum}.
+      signin_button: Entrar
+      signup_text: Use o botão para confirmar seu e-mail e continuar criando sua conta em {forum}.
+      signup_button: Confirmar e-mail
+      invalid_text: Este link é inválido ou expirou. Peça um novo na janela de login.
+      back_link: Voltar para o fórum

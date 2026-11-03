@@ -1,0 +1,45 @@
+// Só o que o passo do código precisa; o resto vem das classes de formulário
+// do core, que o tema (Avocado, Canela) já estiliza.
+
+.MagicLink-hint {
+  margin-bottom: 15px;
+  text-align: center;
+
+  strong {
+    word-break: break-all;
+  }
+}
+
+.MagicLink-codeGroup .label {
+  text-align: left;
+}
+
+.MagicLink-code.FormControl {
+  font-family: var(--font-family-monospace, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.5em;
+  text-align: center;
+  // Compensa o espaço depois do último dígito para o código ficar centrado.
+  text-indent: 0.5em;
+}
+
+.MagicLink-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+// Fora da tela em vez de display: none, que alguns robôs pulam.
+.MagicLink-honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.LogInModal-magicLinkToggle {
+  margin-bottom: 8px;
+}

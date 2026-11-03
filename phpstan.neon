@@ -1,0 +1,14 @@
+includes:
+    - vendor/flarum/phpstan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - extend.php
+        - src
+        - migrations
+    excludePaths:
+        analyse:
+            - *.blade.php
+    databaseMigrationsPath: ['migrations']
+    treatPhpDocTypesAsCertain: false

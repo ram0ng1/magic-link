@@ -1,0 +1,68 @@
+ramon-magic-link:
+  admin:
+    settings:
+      allow_password_label: Also allow passwords
+      allow_password_help: "Off (recommended): members sign in and sign up only with the code or link sent by email; passwords are not accepted, stored or reset. On: the email code is offered alongside the password."
+      token_lifetime_label: Code and link lifetime (minutes)
+      token_lifetime_help: "Between 5 and 1440 (24 hours). After its first use a link keeps working for 10 more minutes, so email scanners that open it first don't use it up. If email delivery breaks, run php flarum magic-link:login-url <username> on the server to get a sign in link."
+
+  forum:
+    log_in:
+      identification_placeholder: Email or username
+      submit_button: Send me a sign in code
+      use_password_link: Log in with a password instead
+      use_code_link: Log in with an email code instead
+
+    sign_up:
+      submit_button: Continue with email
+
+    code:
+      sent_signin: If there is an account for {email}, we sent a sign in code and link to it.
+      sent_signup: We sent a code to {email}. Enter it to confirm your address and create your account.
+      sent_reauth: We sent a code to {email}. Enter it to confirm it's you.
+      label: Code from the email
+      submit_button: Verify code
+      resend_button: Send a new code
+      resent_message: A new code is on its way.
+      change_email_link: Use a different email
+      invalid_message: This code is invalid or has expired. Check the latest email or request a new code.
+
+    change_email:
+      send_code_button: Send a code to my current email
+      submit_button: Confirm and save
+
+    forgot_password:
+      passwordless_text: This forum doesn't use passwords. Log in with a code sent to your email.
+      log_in_button: Log in by email
+
+  email:
+    expiry: The code and the link expire in {minutes} minutes.
+    ignore: If you didn't request this, you can ignore this email. Nobody can sign in without it.
+
+    signin:
+      subject: "Your sign in code for {forum}: {code}"
+      title: Sign in to {forum}
+      intro: Enter this code to sign in to {forum}, or use the button below.
+      button: Sign in
+
+    signup:
+      subject: "Confirm your email for {forum}: {code}"
+      title: Welcome to {forum}
+      intro: Enter this code to confirm your email and finish creating your account, or use the button below.
+      button: Confirm email
+
+    reauth:
+      subject: "Confirmation code for {forum}: {code}"
+      title: Confirm it's you
+      intro: Enter this code on {forum} to confirm the change to your account.
+      button: Confirm
+
+  views:
+    confirm:
+      title: Sign in
+      signin_text: Use the button to sign in to {forum}.
+      signin_button: Sign in
+      signup_text: Use the button to confirm your email and continue creating your account on {forum}.
+      signup_button: Confirm email
+      invalid_text: This link is invalid or has expired. Request a new one from the log in window.
+      back_link: Back to the forum
