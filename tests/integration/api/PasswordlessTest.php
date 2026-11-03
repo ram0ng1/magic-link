@@ -67,7 +67,7 @@ class PasswordlessTest extends MagicLinkTestCase
         $this->setting('allow_sign_up', '1');
 
         $response = $this->send($this->request('POST', '/api/users', [
-            'json' => ['data' => ['type' => 'users', 'attributes' => ['username' => 'nova', 'email' => 'nova@example.com', 'password' => 'senha-forte-123']]],
+            'json' => ['data' => ['type' => 'users', 'attributes' => ['username' => 'nova', 'email' => 'nova@example.com', 'password' => 'senha-forte-123']]], // gitleaks:allow (senha de teste)
         ]));
 
         $this->assertSame(403, $response->getStatusCode());
