@@ -16,9 +16,10 @@ Members type their email (or username) and get a 6-digit code and a sign in link
 
 - **Every form, not only the log in.** Log in, sign up, change email, the admin's create and edit user, forgot password: none of them ask for a password anymore.
 - **Nothing to steal.** The server refuses passwords (`/login`, `/api/token`, anything calling `User::checkPassword()`), never stores one (any password that reaches the database is erased) and turns password reset off. Old hashes are erased as members sign in, or all at once with `php flarum magic-link:purge-passwords`.
-- **Code or link, your pick.** The code is single use, allows 5 tries and kills the link once used. The link opens a confirmation page, so email scanners that open it first don't sign anyone in. After its first use it stays valid for 10 minutes, for up to 7 uses.
-- **No account discovery.** The answer is the same for emails with and without an account; nothing is sent to unknown emails. A honeypot catches bots, and requests are limited per IP and per email.
-- **Changing email asks for a code** sent to the current address instead of the current password.
+- **Code or link, your pick.** Only the latest email works. The code is single use, allows 5 tries (15 per email per day across all requests) and kills the link once used; using the link kills the code. The link opens a confirmation page that shows which account it is for, so email scanners that open it first don't sign anyone in. After its first use it stays valid for 10 minutes, for up to 7 uses.
+- **No account discovery.** The answer is the same for emails with and without an account, nothing is sent to unknown emails, and the limits (10 requests per IP every 10 minutes, 5 per email per hour) count requests, not accounts. A honeypot catches bots.
+- **No pre-registered accounts.** When a code confirms an account that was never confirmed, whatever its creator left behind (password, sessions, social logins) is removed first.
+- **Changing email and erasing the account (flarum/gdpr) ask for a code** sent to the current address instead of the current password.
 - **Plays well with others.** It extends the core `LogInModal` and `SignUpModal`, so the Avocado and Canela themes keep their look, social sign in (fof/oauth) keeps working and fields added by other extensions (terms, profile fields) are sent with the sign up. With `flarum/gdpr`, account erasure stops asking for a password.
 
 ## Installation
@@ -35,7 +36,8 @@ Enable Magic Link on the Extensions page and make sure your forum can send email
 
 - If email delivery breaks, nobody can sign in. Anyone with server access can print a one-time sign in link with `php flarum magic-link:login-url <username>`; it works in maintenance mode too.
 - Expired codes are deleted by the daily `magic-link:prune` command, run by the Flarum scheduler.
-- Codes and links are stored only as SHA-256 hashes.
+- Codes and links are stored only as SHA-256 hashes. With the default `sync` queue the email is sent during the request; a real queue (Redis, database) keeps response times the same for every address.
+- Behind a reverse proxy or CDN, make sure PHP sees the visitor's IP (for example nginx `real_ip`), otherwise everyone shares the per-IP limit.
 
 ## Development
 
