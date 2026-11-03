@@ -128,6 +128,16 @@ class RequestMagicLinkTest extends MagicLinkTestCase
         $this->assertSame(MagicToken::TYPE_REAUTH, $this->lastIssued()->model->type);
     }
 
+    public function test_mensagem_de_erro_traz_o_nome_do_campo(): void
+    {
+        $this->setting('allow_sign_up', '1');
+
+        $response = $this->requestCode(['type' => 'signup', 'identification' => '']);
+
+        $this->assertSame(422, $response->getStatusCode());
+        $this->assertStringNotContainsString(':attribute', (string) $response->getBody());
+    }
+
     public function test_tipo_invalido(): void
     {
         $this->assertSame(422, $this->requestCode(['type' => 'admin', 'identification' => 'normal'])->getStatusCode());

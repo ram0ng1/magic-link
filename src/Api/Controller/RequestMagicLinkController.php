@@ -61,7 +61,7 @@ class RequestMagicLinkController implements RequestHandlerInterface
         $type = (string) Arr::get($body, 'type', MagicToken::TYPE_SIGNIN);
 
         if (! in_array($type, [MagicToken::TYPE_SIGNIN, MagicToken::TYPE_SIGNUP, MagicToken::TYPE_REAUTH], true)) {
-            throw new ValidationException(['type' => $this->translator->trans('validation.in', ['attribute' => 'type'])]);
+            throw new ValidationException(['type' => $this->validationMessage('in', 'type')]);
         }
 
         // Campo invisível que só robô preenche: finge o envio.
@@ -87,7 +87,7 @@ class RequestMagicLinkController implements RequestHandlerInterface
             // O campo se chama "email" no cadastro e "identification" no login.
             $field = $type === MagicToken::TYPE_SIGNUP ? 'email' : 'identification';
 
-            throw new ValidationException([$field => $this->translator->trans('validation.required', ['attribute' => $this->translator->trans('validation.attributes.email')])]);
+            throw new ValidationException([$field => $this->validationMessage('required', 'email')]);
         }
 
         if ($type === MagicToken::TYPE_SIGNUP) {
@@ -117,7 +117,7 @@ class RequestMagicLinkController implements RequestHandlerInterface
         $email = Str::lower($email);
 
         if (! filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 150) {
-            throw new ValidationException(['email' => $this->translator->trans('validation.email', ['attribute' => $this->translator->trans('validation.attributes.email')])]);
+            throw new ValidationException(['email' => $this->validationMessage('email', 'email')]);
         }
 
         // O nome de usuário é público e é validado antes de olhar o e-mail:
@@ -126,7 +126,7 @@ class RequestMagicLinkController implements RequestHandlerInterface
         $username = trim((string) Arr::get($body, 'username', ''));
 
         if ($username === '') {
-            throw new ValidationException(['username' => $this->translator->trans('validation.required', ['attribute' => $this->translator->trans('validation.attributes.username')])]);
+            throw new ValidationException(['username' => $this->validationMessage('required', 'username')]);
         }
 
         $this->userValidator->assertValid(['username' => $username]);
@@ -178,6 +178,17 @@ class RequestMagicLinkController implements RequestHandlerInterface
         }
 
         return $user;
+    }
+
+    /**
+     * As mensagens de validação do Flarum usam o `:attribute` do Laravel, que o
+     * tradutor (ICU) não troca: quem troca é o validador, que aqui não roda.
+     */
+    protected function validationMessage(string $rule, string $attribute): string
+    {
+        $name = $this->translator->trans('validation.attributes.'.$attribute);
+
+        return str_replace(':attribute', $name !== 'validation.attributes.'.$attribute ? $name : $attribute, $this->translator->trans('validation.'.$rule));
     }
 
     protected function respond(?string $ref = null): ResponseInterface
