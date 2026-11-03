@@ -72,7 +72,8 @@ class MagicLinkMailer
 
         $this->queue->push(new SendMagicLinkEmailJob(
             email: $model->email,
-            displayName: $user !== null ? $user->display_name : '',
+            // No cadastro a conta ainda não existe: a saudação usa o nome escolhido.
+            displayName: $user !== null ? $user->display_name : (string) $model->dataValue('username'),
             subject: $subject,
             title: $title,
             intro: $intro,
