@@ -2,13 +2,12 @@ ramon-magic-link:
   admin:
     settings:
       allow_password_label: Also allow passwords
-      allow_password_help: "Off (recommended): members sign in and sign up only with the code or link sent by email; passwords are not accepted, stored or reset. On: the email code is offered alongside the password."
+      allow_password_help: "Off (recommended): members sign in and sign up only with the code or link sent by email; passwords are not accepted, stored or reset. On: members who already have a password can keep logging in with it (and reset it); sign up and email changes still use the email code."
       token_lifetime_label: Code and link lifetime (minutes)
       token_lifetime_help: "Between 5 and 1440 (24 hours). After its first use a link keeps working for 10 more minutes, so email scanners that open it first don't use it up. If email delivery breaks, run php flarum magic-link:login-url followed by the username on the server to get a sign in link."
 
   forum:
     log_in:
-      identification_placeholder: Email or username
       submit_button: Send me a sign in code
       use_password_link: Log in with a password instead
       use_code_link: Log in with an email code instead

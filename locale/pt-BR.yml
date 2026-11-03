@@ -2,13 +2,12 @@ ramon-magic-link:
   admin:
     settings:
       allow_password_label: Permitir senha também
-      allow_password_help: "Desligado (recomendado): os membros entram e se cadastram só com o código ou o link enviado por e-mail; o fórum não aceita, não guarda e não redefine senhas. Ligado: o código por e-mail aparece junto com a senha."
+      allow_password_help: "Desligado (recomendado): os membros entram e se cadastram só com o código ou o link enviado por e-mail; o fórum não aceita, não guarda e não redefine senhas. Ligado: quem já tem senha continua podendo entrar com ela (e redefini-la); o cadastro e a troca de e-mail seguem com o código por e-mail."
       token_lifetime_label: Validade do código e do link (minutos)
       token_lifetime_help: "Entre 5 e 1440 (24 horas). Depois do primeiro uso, o link ainda vale por 10 minutos, para que leitores de e-mail que o abrem antes não o gastem. Se o envio de e-mail quebrar, rode no servidor php flarum magic-link:login-url seguido do nome de usuário para ter um link de entrada."
 
   forum:
     log_in:
-      identification_placeholder: E-mail ou nome de usuário
       submit_button: Enviar código de acesso
       use_password_link: Entrar com senha
       use_code_link: Entrar com código por e-mail

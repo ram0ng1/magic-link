@@ -96,6 +96,13 @@ export default function extendLogInModal() {
     verifyCode(this.magicLink, this.onerror.bind(this)).then(() => window.location.reload(), this.loaded.bind(this));
   });
 
+  // O core seleciona a senha quando o e-mail já vem preenchido; aqui ela não existe.
+  override('flarum/forum/components/LogInModal', 'onready', function (this: any, original: () => void) {
+    if (this.magicLinkUsePassword) return original();
+
+    this.$(this.magicLink.ref ? '[name=code]' : '[name=identification]').trigger('select');
+  });
+
   extend('flarum/forum/components/LogInModal', 'oninit', function (this: any) {
     this.magicLinkSend = (resend: boolean) => {
       const state = this.magicLink;

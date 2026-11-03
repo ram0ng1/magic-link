@@ -5,6 +5,7 @@ import extendChangeEmailModal from './extenders/extendChangeEmailModal';
 import extendForgotPasswordModal from './extenders/extendForgotPasswordModal';
 import extendLogInModal from './extenders/extendLogInModal';
 import extendSettingsPage from './extenders/extendSettingsPage';
+import extendRequestErasureModal from './extenders/extendRequestErasureModal';
 import extendSignUpModal from './extenders/extendSignUpModal';
 import openPendingRegistration from './openPendingRegistration';
 
@@ -18,6 +19,7 @@ app.initializers.add(
     extendChangeEmailModal();
     extendForgotPasswordModal();
     extendSettingsPage();
+    extendRequestErasureModal();
     extendEditUserModal();
     openPendingRegistration();
   },
