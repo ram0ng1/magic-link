@@ -29,6 +29,7 @@ Password login can stay on as an option, with "Email me a one-time login code" r
 - The same answer for emails with and without an account, limits per IP and per email that count requests rather than accounts, and a honeypot for bots
 - An account that was never confirmed loses whatever its creator left behind (password, sessions, social logins) when the real owner confirms it by code
 - Sign up still finishes through Flarum's registration, so fields added by other extensions (terms, profile) and social sign in (fof/oauth) keep working
+- Works with fof/recaptcha: asking for a sign in or sign up code needs the reCAPTCHA, following its sign in and sign up options (checkbox, invisible and v3)
 
 ## Installation
 

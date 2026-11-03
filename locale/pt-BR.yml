@@ -26,6 +26,10 @@ ramon-magic-link:
       change_email_link: Usar um endereço de e-mail diferente
       invalid_message: Este código é inválido ou expirou. Confira o e-mail mais recente ou peça um novo código.
 
+    recaptcha:
+      resend_text: Marque o reCAPTCHA para receber um novo código.
+      finish_sign_up_text: Marque o reCAPTCHA para terminar o cadastro.
+
     change_email:
       send_code_button: Enviar código para o meu e-mail atual
       submit_button: Confirmar e salvar

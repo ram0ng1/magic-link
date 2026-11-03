@@ -4,7 +4,20 @@ import Button from 'flarum/common/components/Button';
 import type Mithril from 'mithril';
 import type ItemList from 'flarum/common/utils/ItemList';
 
-import { addCodeFields, createState, honeypotField, passwordless, requestCode, resentAlert, submitButton, verifyCode } from '../utils/magicLink';
+import {
+  addCodeFields,
+  createState,
+  honeypotField,
+  passwordless,
+  recaptchaErrorAlert,
+  recaptchaIsCheckbox,
+  recaptchaParams,
+  recaptchaReset,
+  requestCode,
+  resentAlert,
+  submitButton,
+  verifyCode,
+} from '../utils/magicLink';
 
 /**
  * O login por e-mail dentro do LogInModal do core (o Avocado envolve o
@@ -23,20 +36,40 @@ export default function extendLogInModal() {
 
     this.magicLinkSend = (resend: boolean) => {
       const state = this.magicLink;
+
+      // Com o checkbox da fof/recaptcha, um novo código pede o captcha de novo: volta ao e-mail.
+      if (resend && recaptchaIsCheckbox(this, 'signin')) {
+        state.ref = null;
+        this.alertAttrs = { type: 'warning', content: app.translator.trans('ramon-magic-link.forum.recaptcha.resend_text') };
+        return;
+      }
+
       const identification = resend ? state.email : this.identification().trim();
 
       this.loading = true;
       this.alertAttrs = null;
 
-      requestCode(state, { type: 'signin', identification, remember: this.remember() }, this.onerror.bind(this)).then(() => {
-        state.email = identification;
-        this.loading = false;
+      recaptchaParams(this, 'signin')
+        .catch(() => {
+          this.alertAttrs = recaptchaErrorAlert();
+          throw new Error('recaptcha');
+        })
+        .then((captcha) => requestCode(state, { type: 'signin', identification, remember: this.remember(), ...captcha }, this.onerror.bind(this)))
+        .then(
+          () => {
+            state.email = identification;
+            this.loading = false;
 
-        if (resend) this.alertAttrs = resentAlert();
+            if (resend) this.alertAttrs = resentAlert();
 
-        m.redraw.sync();
-        this.$('[name=code]').trigger('focus');
-      }, this.loaded.bind(this));
+            m.redraw.sync();
+            this.$('[name=code]').trigger('focus');
+          },
+          () => {
+            recaptchaReset(this, 'signin');
+            this.loaded();
+          }
+        );
     };
   });
 
@@ -46,6 +79,9 @@ export default function extendLogInModal() {
     if (state.ref) {
       // O "Esqueci minha senha" que o Canela põe no formulário.
       ['identification', 'password', 'remember', 'canelaForgot'].forEach((key) => items.remove(key));
+
+      // O checkbox da fof/recaptcha já foi usado; o invisível e o v3 ficam para o reenvio.
+      if (recaptchaIsCheckbox(this, 'signin')) items.remove('recaptcha');
 
       addCodeFields(items, state, {
         type: 'signin',
