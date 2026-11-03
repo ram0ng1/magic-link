@@ -37,7 +37,7 @@ export function createState(): MagicLinkState {
 
 export function requestCode(
   state: MagicLinkState,
-  body: { type: MagicLinkType; identification?: string; username?: string; remember?: boolean },
+  body: { type: MagicLinkType; identification?: string; username?: string; remember?: boolean } & Record<string, unknown>,
   errorHandler: (error: RequestError) => void
 ): Promise<void> {
   return app
@@ -52,6 +52,77 @@ export function requestCode(
       state.code('');
       state.resendAt = Date.now() + RESEND_DELAY;
     });
+}
+
+/**
+ * fof/recaptcha: o estado do captcha que ela põe no próprio modal, quando a
+ * opção dela vale para este tipo de pedido.
+ */
+export function recaptchaFor(modal: any, type: 'signin' | 'signup'): any | null {
+  if (!modal.recaptcha || modal.recaptchaDisable) return null;
+  if (!app.forum.attribute('fof-recaptcha.configured') || !app.forum.attribute(`fof-recaptcha.${type}`)) return null;
+
+  return modal.recaptcha;
+}
+
+/** O checkbox precisa da pessoa; o invisível e o v3 geram o token sozinhos. */
+export function recaptchaIsCheckbox(modal: any, type: 'signin' | 'signup'): boolean {
+  const recaptcha = recaptchaFor(modal, type);
+
+  return !!recaptcha && !recaptcha.requiresAsyncToken();
+}
+
+export async function recaptchaParams(modal: any, type: 'signin' | 'signup'): Promise<Record<string, string>> {
+  const recaptcha = recaptchaFor(modal, type);
+
+  if (!recaptcha) return {};
+
+  return { 'g-recaptcha-response': await recaptchaToken(recaptcha), 'g-recaptcha-action': recaptcha.action };
+}
+
+/**
+ * No modo invisível, o acquireToken() da fof/recaptcha 2.0.1 não termina: o
+ * widget guarda o callback do momento em que foi desenhado. Aqui o token vem do
+ * getResponse() depois do execute(), sem depender do callback.
+ */
+export function recaptchaToken(recaptcha: any): Promise<string> {
+  if (!recaptcha.isInvisible()) {
+    return recaptcha.requiresAsyncToken() ? recaptcha.acquireToken() : Promise.resolve(recaptcha.getResponse());
+  }
+
+  const grecaptcha = (window as any).grecaptcha;
+  const widgetId = recaptcha.widgetId ?? undefined;
+
+  grecaptcha.reset(widgetId);
+  grecaptcha.execute(widgetId);
+
+  // Até 2 minutos: pode aparecer um desafio de imagens para resolver.
+  return new Promise((resolve, reject) => {
+    const started = Date.now();
+
+    const poll = () => {
+      const token = grecaptcha.getResponse(widgetId);
+
+      if (token) resolve(token);
+      else if (Date.now() - started > 120_000) reject(new Error('recaptcha timeout'));
+      else setTimeout(poll, 250);
+    };
+
+    poll();
+  });
+}
+
+/** O token vale uma vez: depois de usado, o checkbox precisa ser marcado de novo. */
+export function recaptchaReset(modal: any, type: 'signin' | 'signup'): void {
+  try {
+    recaptchaFor(modal, type)?.reset();
+  } catch {
+    // O widget pode já ter saído da tela.
+  }
+}
+
+export function recaptchaErrorAlert(): { type: 'error'; content: Mithril.Children } {
+  return { type: 'error', content: app.translator.trans('fof-recaptcha.lib.error') };
 }
 
 export function verifyCode(state: MagicLinkState, errorHandler: (error: RequestError) => void): Promise<VerifyResult> {

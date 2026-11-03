@@ -79,4 +79,10 @@ return [
         ->get('/magic-link/{token:[A-Za-z0-9]+}', 'magic-link.confirm', Forum\Controller\MagicLinkViewController::class)
         ->post('/magic-link/{token:[A-Za-z0-9]+}', 'magic-link.confirm.submit', Forum\Controller\MagicLinkController::class),
 
+    // Integrações opcionais: só valem com a outra extensão ativa.
+    (new Extend\Conditional())
+        ->whenExtensionEnabled('fof-recaptcha', fn () => [
+            (new Extend\ServiceProvider())->register(Integration\Recaptcha\RecaptchaServiceProvider::class),
+        ]),
+
 ];
