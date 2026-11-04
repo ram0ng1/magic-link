@@ -13,6 +13,7 @@ namespace Ramon\MagicLink\Mail;
 
 use Flarum\Locale\TranslatorInterface;
 use Flarum\Queue\AbstractJob;
+use Flarum\Settings\SettingsRepositoryInterface;
 use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Mail\Message;
@@ -29,8 +30,8 @@ class SendMagicLinkEmailJob extends AbstractJob
         private readonly string $subject,
         private readonly string $title,
         private readonly string $intro,
-        #[\SensitiveParameter] private readonly string $code,
-        #[\SensitiveParameter] private readonly ?string $link,
+        private readonly string $sealedCode,
+        private readonly ?string $sealedLink,
         private readonly string $button,
         private readonly string $expiry,
         private readonly string $ignore,
@@ -40,8 +41,11 @@ class SendMagicLinkEmailJob extends AbstractJob
         parent::__construct();
     }
 
-    public function handle(Mailer $mailer, Factory $view, TranslatorInterface $translator): void
+    public function handle(Mailer $mailer, Factory $view, TranslatorInterface $translator, SettingsRepositoryInterface $settings): void
     {
+        $code = QueueSeal::open($settings, $this->sealedCode);
+        $link = $this->sealedLink !== null ? QueueSeal::open($settings, $this->sealedLink) : null;
+
         if ($this->locale !== null) {
             $translator->setLocale($this->locale);
         }
@@ -61,8 +65,8 @@ class SendMagicLinkEmailJob extends AbstractJob
             ],
             [
                 'intro' => $this->intro,
-                'code' => $this->code,
-                'magicLink' => $this->link,
+                'code' => $code,
+                'magicLink' => $link,
                 'button' => $this->button,
                 'expiry' => $this->expiry,
                 'ignore' => $this->ignore,
